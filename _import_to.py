@@ -1,9 +1,13 @@
 #!python3
-'''Designed to be used as a share extension
+'''Designed to be used as a share extension.
 Import files into Pythonista app.'''
 
-import appex, os, console, shutil
+import appex
+import os
+import console
+import shutil
 import urllib.request
+
 
 def import_from_file(fname, fpath, basepath):
     i = 2
@@ -11,12 +15,13 @@ def import_from_file(fname, fpath, basepath):
     fname_ext = '.'+fname.split('.')[-1]
     write_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
-        fname = fname_ori +'('+str(i)+')'+ fname_ext
+        fname = fname_ori + '('+str(i)+')' + fname_ext
         write_path = os.path.join(basepath, fname)
         i += 1
 
     shutil.copy(fpath, write_path)
     console.hud_alert('Imported as: '+fname)
+
 
 def import_from_text(fname, fpath, basepath):
     i = 2
@@ -24,7 +29,7 @@ def import_from_text(fname, fpath, basepath):
     fname_ext = '.'+fname.split('.')[-1]
     write_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
-        fname = fname_ori +'('+str(i)+')'+ fname_ext
+        fname = fname_ori + '('+str(i)+')' + fname_ext
         write_path = os.path.join(basepath, fname)
         i += 1
 
@@ -36,6 +41,7 @@ def import_from_text(fname, fpath, basepath):
     with open(write_path, 'w') as w:
         w.write(content)
     console.hud_alert('Imported as: '+fname)
+
 
 def main():
     if not appex.is_running_extension():
@@ -55,7 +61,8 @@ def main():
                 import_from_text(fname, fpath, basepath)
     elif appex.get_text():
         fpath = appex.get_text()
-        resp = console.alert('Import file as..', 'Choose File Extension', '.py', '.txt', '.pyui', hide_cancel_button=False)
+        resp = console.alert('Import file as..', 'Choose File Extension',
+                             '.py', '.txt', '.pyui', hide_cancel_button=False)
         if resp == 1:
             fname = 'imported.py'
         elif resp == 2:
