@@ -1,12 +1,14 @@
 #!python3
 '''Designed to be used as a share extension.
-Import files into Pythonista app.'''
+Import files into Pythonista app. Can import from file, selected text, and
+url of file on the open web.'''
 
 import appex
 import os
+import re
 import console
 import shutil
-import urllib.request
+import requests
 
 
 def import_from_file(fname, fpath, basepath):
@@ -36,6 +38,29 @@ def import_from_text(fname, fpath, basepath):
     try:
         with open(fpath) as r:
             content = r.read()
+    except:
+        content = fpath
+        if isinstance(content, bytes):
+            content = content.decode('utf8')
+    with open(write_path, 'wb') as w:
+        w.write(content.encode('utf8'))
+    console.hud_alert('Imported as: '+fname)
+
+
+def import_from_url(fname, fpath, basepath):
+    i = 2
+    fname_ori = fname.split('.')[0]
+    fname_ext = re.findall('(\.[a-zA-Z]+)', fname)[-1]
+    fname = fname_ori + fname_ext
+    write_path = os.path.join(basepath, fname)
+    while os.path.exists(write_path):
+        fname = fname_ori + '('+str(i)+')' + fname_ext
+        write_path = os.path.join(basepath, fname)
+        i += 1
+
+    try:
+        r = requests.get(fpath)
+        content = r.text
     except:
         content = fpath
     with open(write_path, 'w') as w:
@@ -70,6 +95,10 @@ def main():
         elif resp == 3:
             fname = 'imported.pyui'
         import_from_text(fname, fpath, basepath)
+    elif appex.get_url():
+        fpath = appex.get_url()
+        fname = os.path.split(fpath)[1]
+        import_from_url(fname, fpath, basepath)
     else:
         console.hud_alert('Not a file!', icon='error')
 
