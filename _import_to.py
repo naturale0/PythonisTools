@@ -4,37 +4,33 @@ Import files into Pythonista app. Can import from file, selected text, and
 url of file on the open web.'''
 
 import appex
+import console
 import os
 import re
-import console
-import shutil
 import requests
+import shutil
+
+
+def numbered_filename(filename, i):
+    return ('(' + str(i) + ')').join(os.path.splitext(filename))
 
 
 def import_from_file(fname, fpath, basepath):
     i = 2
-    fname_ori = fname.split('.')[0]
-    fname_ext = '.'+fname.split('.')[-1]
-    write_path = os.path.join(basepath, fname)
+    write_path = orig_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
-        fname = fname_ori + '('+str(i)+')' + fname_ext
-        write_path = os.path.join(basepath, fname)
+        write_path = numbered_filename(orig_path, i)
         i += 1
-
     shutil.copy(fpath, write_path)
-    console.hud_alert('Imported as: '+fname)
+    console.hud_alert('Imported as: ' + fname)
 
 
 def import_from_text(fname, fpath, basepath):
     i = 2
-    fname_ori = fname.split('.')[0]
-    fname_ext = '.'+fname.split('.')[-1]
-    write_path = os.path.join(basepath, fname)
+    write_path = orig_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
-        fname = fname_ori + '('+str(i)+')' + fname_ext
-        write_path = os.path.join(basepath, fname)
+        write_path = numbered_filename(orig_path, i)
         i += 1
-
     try:
         with open(fpath) as r:
             content = r.read()
@@ -44,7 +40,7 @@ def import_from_text(fname, fpath, basepath):
             content = content.decode('utf8')
     with open(write_path, 'wb') as w:
         w.write(content.encode('utf8'))
-    console.hud_alert('Imported as: '+fname)
+    console.hud_alert('Imported as: ' + fname)
 
 
 def import_from_url(fname, fpath, basepath):
@@ -52,12 +48,10 @@ def import_from_url(fname, fpath, basepath):
     fname_ori = fname.split('.')[0]
     fname_ext = re.findall('(\.[a-zA-Z]+)', fname)[-1]
     fname = fname_ori + fname_ext
-    write_path = os.path.join(basepath, fname)
+    write_path = orig_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
-        fname = fname_ori + '('+str(i)+')' + fname_ext
-        write_path = os.path.join(basepath, fname)
+        write_path = numbered_filename(orig_path, i)
         i += 1
-
     try:
         r = requests.get(fpath)
         content = r.text
@@ -65,7 +59,7 @@ def import_from_url(fname, fpath, basepath):
         content = fpath
     with open(write_path, 'w') as w:
         w.write(content)
-    console.hud_alert('Imported as: '+fname)
+    console.hud_alert('Imported as: ' + fname)
 
 
 def main():
@@ -86,14 +80,10 @@ def main():
                 import_from_text(fname, fpath, basepath)
     elif appex.get_text():
         fpath = appex.get_text()
-        resp = console.alert('Import file as..', 'Choose File Extension',
-                             '.py', '.txt', '.pyui', hide_cancel_button=False)
-        if resp == 1:
-            fname = 'imported.py'
-        elif resp == 2:
-            fname = 'imported.txt'
-        elif resp == 3:
-            fname = 'imported.pyui'
+        ask = 'Choose File Extension', 'py', 'txt', 'pyui'
+        resp = console.alert('Import file as..', *ask,
+                             hide_cancel_button=False)
+        fname = 'imported.' + ask[resp]
         import_from_text(fname, fpath, basepath)
     elif appex.get_url():
         fpath = appex.get_url()
@@ -104,4 +94,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
