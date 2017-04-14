@@ -5,7 +5,8 @@ import io
 ipynb = open('test.ipynb').read()
 for cell in json.loads(ipynb)['cells']:
     if cell['cell_type'] == 'markdown':
-        print(cell)
+        for line in cell['source']:
+            print(line)
         print()
         # source: 마크다운 내용, 각 줄(str)의 리스트
     elif cell['cell_type'] == 'code':
@@ -29,6 +30,10 @@ for cell in json.loads(ipynb)['cells']:
             elif out_cell['output_type'] == 'stream':
                 for line in out_cell['text']:
                     print(line.strip())
+            elif out_cell['output_type'] == 'error':
+                print(out_cell['ename'] + ': ' + out_cell['evalue'])
+                for line in out_cell['traceback']:
+                    print(line)
             else:
                 print('+'*50)
         print()

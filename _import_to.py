@@ -58,7 +58,7 @@ def import_from_url(fname, fpath, basepath):
             fpath = fpath.replace('/blob', '')
         r = requests.get(fpath)
         content = r.text
-    except KeyboardInterrupt:
+    except:
         content = fpath
     with open(write_path, 'w') as w:
         w.write(content)
