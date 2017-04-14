@@ -1,7 +1,7 @@
 #!python3
 '''Designed to be used as a share extension.
 Import files into Pythonista app. Can import from file, selected text, and
-url of file on the open web.'''
+url of single file(such as https://github...) on the open web.'''
 
 import appex
 import os
@@ -59,9 +59,12 @@ def import_from_url(fname, fpath, basepath):
         i += 1
 
     try:
+        if fpath.startswith('https://github'):
+            fpath = 'https://raw.' + fpath[8:]
+            fpath = fpath.replace('/blob', '')
         r = requests.get(fpath)
         content = r.text
-    except:
+    except KeyboardInterrupt:
         content = fpath
     with open(write_path, 'w') as w:
         w.write(content)
