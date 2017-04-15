@@ -1,60 +1,70 @@
 #!python3
 import json
 import io
+import editor
+import console
 
-ipynb = open('test.ipynb').read()
-for cell in json.loads(ipynb)['cells']:
-    if cell['cell_type'] == 'markdown':
-        for line in cell['source']:
-            print(line)
-        print()
-        # source: 마크다운 내용, 각 줄(str)의 리스트
-    elif cell['cell_type'] == 'code':
-        print('['+str(cell['execution_count'])+']')
-        for line in cell['source']:
-            print('>>>', line.strip())
-        print()
-            
-        output = cell['outputs']
-        for out_cell in output:
-            if out_cell['output_type'] == 'execute_result':
-                print(out_cell['execution_count'],)
-                for l in out_cell['data']:
-                    if l == 'text/plain':
-                        for txt in out_cell['data'][l]:
-                            print(txt.strip())
-                    elif l == 'text/html':
-                        for txt in out_cell['data'][l]:
-                            print(txt)
-                print()
-            elif out_cell['output_type'] == 'stream':
-                for line in out_cell['text']:
-                    print(line.strip())
-            elif out_cell['output_type'] == 'error':
-                print(out_cell['ename'] + ': ' + out_cell['evalue'])
-                for line in out_cell['traceback']:
+def parse_ipynb():
+    try:
+        ipynb = json.loads(editor.get_text())
+    except TypeError:
+        console.hud_alert("Tap 'Edit as Text' first", 'error')
+        return
+    
+    try:
+        for cell in ipynb['cells']:
+            if cell['cell_type'] == 'markdown':
+                for line in cell['source']:
                     print(line)
+                print()
+                # source: 마크다운 내용, 각 줄(str)의 리스트
+            elif cell['cell_type'] == 'code':
+                print('['+str(cell['execution_count'])+']')
+                for line in cell['source']:
+                    print('>>>', line.strip())
+                print()
+                    
+                output = cell['outputs']
+                for out_cell in output:
+                    if out_cell['output_type'] == 'execute_result':
+                        print(out_cell['execution_count'],)
+                        for l in out_cell['data']:
+                            if l == 'text/plain':
+                                for txt in out_cell['data'][l]:
+                                    print(txt.strip())
+                            elif l == 'text/html':
+                                for txt in out_cell['data'][l]:
+                                    print(txt)
+                        print()
+                    elif out_cell['output_type'] == 'stream':
+                        for line in out_cell['text']:
+                            print(line.strip())
+                    elif out_cell['output_type'] == 'error':
+                        print(out_cell['ename'] + ': ' + out_cell['evalue'])
+                        for line in out_cell['traceback']:
+                            print(line)
+                    else:
+                        print('+'*50)
+                print()
+                # source: 코드 내용, 각 줄(str)의 리스트
+                # outputs: 
+                #   name: 아웃풋 이름 - stdout, 
+                #   output_type: - stream
+                #   text: - 아웃풋 내용, 각 줄의 리스트
+                # execution_count: 실행 순서(int 혹은 null)
+            elif cell['cell_type'] == 'raw':
+                print(cell['source'])
+                print()
+                # source: 코드 내용, 각 줄(str)의 리스트
             else:
                 print('+'*50)
-        print()
-        # source: 코드 내용, 각 줄(str)의 리스트
-        # outputs: 
-        #   name: 아웃풋 이름 - stdout, 
-        #   output_type: - stream
-        #   text: - 아웃풋 내용, 각 줄의 리스트
-        # execution_count: 실행 순서(int 혹은 null)
-    elif cell['cell_type'] == 'raw':
-        print(cell['source'])
-        print()
-        # source: 코드 내용, 각 줄(str)의 리스트
-    else:
-        print('+'*50)
-        print(cell)
-        print('='*50)
-        print()
-        
-        
-        
+                print(cell)
+                print('='*50)
+                print()
+    except KeyError:
+        console.hud_alert('Not a proper notebook', 'error')
+if __name__ == '__main__':
+        parse_ipynb()
 
 '''
 프린트만 있는 셀
