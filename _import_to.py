@@ -20,6 +20,7 @@ def import_from_file(fname, fpath, basepath):
     write_path = orig_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
         write_path = numbered_filename(orig_path, i)
+        fname = os.path.basename(write_path)
         i += 1
     shutil.copy(fpath, write_path)
     console.hud_alert('Imported as: ' + fname)
@@ -30,6 +31,7 @@ def import_from_text(fname, fpath, basepath):
     write_path = orig_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
         write_path = numbered_filename(orig_path, i)
+        fname = os.path.basename(write_path)
         i += 1
     try:
         with open(fpath) as r:
@@ -44,6 +46,13 @@ def import_from_text(fname, fpath, basepath):
 
 
 def import_from_url(fname, fpath, basepath):
+    if fpath.startswith('https://github'):
+        fpath = 'https://raw.' + fpath[8:]
+        fpath = fpath.replace('/blob', '')
+    elif fpath.startswith('https://gist.'):
+        r = requests.get('http://api.github.com/gists/' + os.path.basename(fpath)).json()
+        fname = list(r['files'].keys())[0]
+        fpath += '/raw'
     i = 2
     fname_ori = fname.split('.')[0]
     fname_ext = re.findall('(\.[a-zA-Z]+)', fname)[-1]
@@ -51,11 +60,9 @@ def import_from_url(fname, fpath, basepath):
     write_path = orig_path = os.path.join(basepath, fname)
     while os.path.exists(write_path):
         write_path = numbered_filename(orig_path, i)
+        fname = os.path.basename(write_path)
         i += 1
     try:
-        if fpath.startswith('https://github'):
-            fpath = 'https://raw.' + fpath[8:]
-            fpath = fpath.replace('/blob', '')
         r = requests.get(fpath)
         content = r.text
     except:
@@ -66,6 +73,7 @@ def import_from_url(fname, fpath, basepath):
 
 
 def main():
+    console.hud_alert('processing..', 'success')
     if not appex.is_running_extension():
         print('This script is intended to be run from the sharing extension.')
         return
